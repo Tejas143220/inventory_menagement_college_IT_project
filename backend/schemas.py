@@ -1,6 +1,8 @@
 from typing import List, Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, constr
 from datetime import datetime
+
+PhoneNumber = constr(strip_whitespace=True, pattern=r"^\d{10}$")
 
 # =================================================
 # USER
@@ -165,15 +167,15 @@ class InventoryAdjustment(BaseModel):
 # =================================================
 class SupplierCreate(BaseModel):
     name: str
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    email: EmailStr
+    phone: PhoneNumber
     address: Optional[str] = None
     company: Optional[str] = None
 
 class SupplierUpdate(BaseModel):
     name: str
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    email: EmailStr
+    phone: PhoneNumber
     address: Optional[str] = None
     company: Optional[str] = None
 
@@ -193,15 +195,15 @@ class SupplierOut(BaseModel):
 # =================================================
 class CustomerCreate(BaseModel):
     name: str
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    email: EmailStr
+    phone: PhoneNumber
     address: Optional[str] = None
     pending_payment: Optional[float] = 0.0
 
 class CustomerUpdate(BaseModel):
     name: str
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    email: EmailStr
+    phone: PhoneNumber
     address: Optional[str] = None
     pending_payment: float
 
@@ -266,7 +268,7 @@ class PurchaseCreate(BaseModel):
 
 class PurchaseOut(BaseModel):
     id: int
-    supplier_id: int
+    supplier_id: Optional[int] = None
     warehouse_id: Optional[int] = None
     purchase_date: datetime
     invoice_number: str

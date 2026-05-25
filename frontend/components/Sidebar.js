@@ -6,13 +6,13 @@ import { usePathname } from "next/navigation";
 const navItems = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/categories", label: "Categories" },
-    { href: "/products", label: "Products" },
+    { href: "/products", label: "Product" },
+    { href: "/warehouses", label: "Warehouses" },
     { href: "/stock", label: "Stock & Inventory" },
     { href: "/suppliers", label: "Suppliers" },
-    { href: "/warehouses", label: "Warehouses" },
+    { href: "/purchases", label: "Purchases" },
     { href: "/customers", label: "Customers" },
     { href: "/sales", label: "Sales" },
-    { href: "/purchases", label: "Purchases" },
     { href: "/reports", label: "Reports" },
     { href: "/profile", label: "Profile" }
 ];

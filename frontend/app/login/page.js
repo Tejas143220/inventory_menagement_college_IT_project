@@ -10,7 +10,9 @@ import {
     FaEnvelope,
     FaLock,
     FaArrowLeft,
-    FaWarehouse
+    FaWarehouse,
+    FaEye,
+    FaEyeSlash
 } from "react-icons/fa";
 
 export default function Login() {
@@ -18,6 +20,8 @@ export default function Login() {
     const router = useRouter();
 
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const [formData, setFormData] = useState({
         email: "",
@@ -43,6 +47,17 @@ export default function Login() {
     const handleSubmit = async (e) => {
 
         e.preventDefault();
+        setErrorMessage("");
+
+        if (!formData.email.trim() || !formData.password.trim()) {
+            setErrorMessage("Please enter both email and password.");
+            return;
+        }
+
+        if (formData.password.length < 6) {
+            setErrorMessage("Password must be at least 6 characters.");
+            return;
+        }
 
         setLoading(true);
 
@@ -61,13 +76,9 @@ export default function Login() {
             router.push("/dashboard");
 
         } catch (error) {
-
             console.log(error.response?.data);
-
-            alert("Invalid Email or Password");
-
+            setErrorMessage(error.response?.data?.detail || "Invalid email or password.");
         } finally {
-
             setLoading(false);
         }
     };
@@ -196,6 +207,11 @@ export default function Login() {
                         onSubmit={handleSubmit}
                         className="space-y-5"
                     >
+                        {errorMessage && (
+                            <div className="rounded-2xl border border-rose-400 bg-rose-50 p-4 text-sm text-rose-700">
+                                {errorMessage}
+                            </div>
+                        )}
 
                         {/* EMAIL */}
 
@@ -236,7 +252,7 @@ export default function Login() {
                                 <FaLock className="text-gray-400 mr-3" />
 
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     name="password"
                                     placeholder="Enter password"
                                     value={formData.password}
@@ -244,6 +260,15 @@ export default function Login() {
                                     className="w-full bg-transparent outline-none text-gray-700"
                                     required
                                 />
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="text-gray-400 hover:text-indigo-600 transition ml-3"
+                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                >
+                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                </button>
 
                             </div>
 

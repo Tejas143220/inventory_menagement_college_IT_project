@@ -15,10 +15,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 try:
-    from .database import get_db
-    from . import models
-    from . import schemas
-    from . import auth
+    from backend.database import get_db
+    from backend import models
+    from backend import schemas
+    from backend import auth
 except ImportError:
     from database import get_db
     import models
@@ -757,6 +757,57 @@ def get_purchase(id: int, db: Session = Depends(get_db), current_user: dict = De
     if not purchase:
         raise HTTPException(status_code=404, detail="Purchase not found")
     return purchase
+
+@router.delete("/purchases/{id}")
+def delete_purchase(id: int, db: Session = Depends(get_db), current_user: dict = Depends(auth.admin_only)):
+    purchase = db.query(models.Purchase).filter(models.Purchase.id == id).first()
+    if not purchase:
+        raise HTTPException(status_code=404, detail="Purchase not found")
+
+    warehouse_id = purchase.warehouse_id
+    restored_products = set()
+
+    for item in purchase.items:
+        inv = db.query(models.Inventory).filter(
+            models.Inventory.product_id == item.product_id,
+            models.Inventory.warehouse_id == warehouse_id
+        ).first()
+
+        if inv:
+            if inv.stock < item.quantity:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot delete purchase {purchase.invoice_number} because inventory for product ID {item.product_id} has already moved." 
+                )
+            inv.stock -= item.quantity
+            restored_products.add(item.product_id)
+
+        mov = models.StockMovement(
+            product_id=item.product_id,
+            quantity=-item.quantity,
+            type="purchase_cancellation",
+            from_warehouse_id=warehouse_id,
+            to_warehouse_id=None,
+            description=f"Reversed purchase stock from invoice: {purchase.invoice_number}"
+        )
+        db.add(mov)
+
+    invoices = db.query(models.Invoice).filter(models.Invoice.purchase_id == purchase.id).all()
+    for invoice in invoices:
+        db.delete(invoice)
+
+    db.delete(purchase)
+    db.commit()
+
+    for product_id in restored_products:
+        total_stock = db.query(func.sum(models.Inventory.stock)).filter(models.Inventory.product_id == product_id).scalar() or 0
+        product = db.query(models.Product).filter(models.Product.id == product_id).first()
+        if product:
+            product.quantity = total_stock
+    db.commit()
+
+    log_activity(db, "DELETE_PURCHASE", f"Deleted purchase invoice {purchase.invoice_number} and reversed stock", current_user.get("id"))
+    return {"message": "Purchase record deleted and stock reversed successfully"}
 
 @router.post("/purchases", response_model=schemas.PurchaseOut)
 def create_purchase(purchase_in: schemas.PurchaseCreate, db: Session = Depends(get_db), current_user: dict = Depends(auth.admin_only)):

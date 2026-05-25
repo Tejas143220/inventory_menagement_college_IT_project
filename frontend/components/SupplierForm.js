@@ -103,14 +103,19 @@ export default function SupplierForm({ onSubmit, editingSupplier, cancelEdit }) 
                 <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Contact Phone *</label>
                     <input
-                        type="text"
+                        type="tel"
                         name="phone"
-                        placeholder="e.g. +91 98765 43210"
+                        placeholder="e.g. 9876543210"
                         value={formData.phone}
                         onChange={handleChange}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 outline-none focus:border-indigo-500 transition"
+                        inputMode="numeric"
+                        pattern="[0-9]{10}"
+                        title="Enter exactly 10 digits"
+                        maxLength={10}
                         required
                     />
+                    <p className="mt-2 text-xs text-slate-500">Enter exactly 10 digits with no spaces or symbols.</p>
                 </div>
 
                 {/* Address */}

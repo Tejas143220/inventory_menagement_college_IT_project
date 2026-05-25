@@ -156,12 +156,16 @@ export default function Customers() {
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Phone Number *</label>
                                 <input
-                                    type="text"
+                                    type="tel"
                                     name="phone"
-                                    placeholder="e.g. +91 99999 88888"
+                                    placeholder="e.g. 9876543210"
                                     value={formData.phone}
                                     onChange={handleChange}
                                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 outline-none focus:border-indigo-500 transition"
+                                    inputMode="numeric"
+                                    pattern="[0-9]{10}"
+                                    title="Enter exactly 10 digits"
+                                    maxLength={10}
                                     required
                                 />
                             </div>
